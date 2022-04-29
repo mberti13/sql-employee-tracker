@@ -1,5 +1,6 @@
 const inquirer = require('inquirer');
-const { up } = require('inquirer/lib/utils/readline');
+
+const cTable = require('console.table');
 
 const db = require('./db/connection');
 
@@ -18,12 +19,30 @@ const userInput = () => {
             if (answers.options === "View all departments") {
                 // TODO: console table the departments sql table
                 // ! CODE HERE
+                db.connect(function(err){
+                    db.query("SELECT * FROM departments", function(err, result, fields){
+                        if(err) throw err;
+                        console.table(result);
+                    });
+                });
             } else if (answers.options === "View all roles") {
                 // TODO: console table the roles sql table
-                // ! CODE HERE 
+                // ! CODE HERE
+                db.connect(function(err){
+                    db.query("SELECT * FROM roles", function(err, result, fields){
+                        if(err) throw err;
+                        console.table(result);
+                    });
+                }); 
             } else if (answers.options === "View employees") {
                 // TODO: console table the employees sql table
                 // ! CODE HERE
+                db.connect(function(err){
+                    db.query("SELECT * FROM employees", function(err, result, fields){
+                        if(err) throw err;
+                        console.table(result);
+                    });
+                });
             } else if (answers.options === "Add a department") {
                 // TODO: Create Queries to add department
                 // ! CODE HERE
