@@ -7,6 +7,11 @@ const db = require('./db/connection');
 const userInput = () => {
     db.connect((err) => {
         if (err) throw err;
+        console.log(`
+        ==================
+        Database Connected
+        ==================
+        `);
         inquirer.prompt([
             {
                 type: "list",
@@ -17,36 +22,28 @@ const userInput = () => {
         ]).then(answers => {
             console.log(answers.options);
             if (answers.options === "View all departments") {
-                // TODO: console table the departments sql table
-                // ! CODE HERE
                 db.connect(function(err){
-                    db.query("SELECT * FROM departments", function(err, result, fields){
+                    db.query("SELECT department_id AS Id, department_name AS Name FROM departments;", function(err, result, fields){
                         if(err) throw err;
                         console.table(result);
                     });
                 });
             } else if (answers.options === "View all roles") {
-                // TODO: console table the roles sql table
-                // ! CODE HERE
                 db.connect(function(err){
-                    db.query("SELECT * FROM roles", function(err, result, fields){
+                    db.query("SELECT roles.job_title, roles.salary, departments.department_name FROM roles INNER JOIN departments ON roles.department_id = departments.department_id", function(err, result, fields){
                         if(err) throw err;
                         console.table(result);
                     });
                 }); 
             } else if (answers.options === "View employees") {
-                // TODO: console table the employees sql table
-                // ! CODE HERE
                 db.connect(function(err){
-                    db.query("SELECT * FROM employees", function(err, result, fields){
+                    db.query("SELECT employees.first_name, employees.last_name, roles.job_title, departments.department_name FROM employees INNER JOIN roles on employees.role_id = roles.role_id INNER JOIN departments on roles.department_id = departments.department_id;", function(err, result, fields){
                         if(err) throw err;
                         console.table(result);
                     });
                 });
             } else if (answers.options === "Add a department") {
-                // TODO: Create Queries to add department
-                // ! CODE HERE
-                // ? ask for department name
+                //  ask for department name
                 inquirer.prompt([
                     {
                         type: "input",
@@ -55,7 +52,21 @@ const userInput = () => {
                     }
                 ]).then(departmentData => {
                     console.log(departmentData);
-                    // TODO: add department data to sql table with new ID
+                    let { department_name } = departmentData
+
+                    let sql = `INSERT INTO departments (department_name)
+                                VALUES ('${department_name}')`;
+
+
+                                db.connect(function(err){
+                                    db.query(sql, function(err, result, fields){
+                                        if(err) throw err;
+                                        console.table(result);
+                                    });
+                                });
+
+                    //query to add data to database
+
                 });
             } else if (answers.options === "Add a role") {
                 // Create Queries to add role
@@ -93,10 +104,21 @@ const userInput = () => {
                 ]).then(roleData => {
                     console.log(roleData);
                     // TODO: add role data to sql table with new ID
+                    let { job_title, department_id, salary } = roleData
+
+                    let sql = `INSERT INTO roles (job_title, department_id, salary)
+                                VALUES ('${job_title}','${department_id}', ${salary})`;
+
+
+                                db.connect(function(err){
+                                    db.query(sql, function(err, result, fields){
+                                        if(err) throw err;
+                                        console.table(result);
+                                    });
+                                });
+
                 });
             }else if (answers.options === "Add an employee"){
-                // TODO: Create Queries to add employee
-                // ! CODE HERE
                 // ? ask for employee name
                 inquirer.prompt([
                     {
@@ -142,7 +164,19 @@ const userInput = () => {
                     }
                 ]).then(employeeData => {
                     console.log(employeeData);
-                    // TODO: add employee data to sql table with new ID
+                    //  TODO: add employee data to sql table with new ID
+                    let { first_name, last_name, role_id, manager_id } = employeeData
+
+                    let sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id)
+                                VALUES ('${first_name}','${last_name}', ${role_id}, ${manager_id})`;
+
+
+                                db.connect(function(err){
+                                    db.query(sql, function(err, result, fields){
+                                        if(err) throw err;
+                                        console.table(result);
+                                    });
+                                });
                 });
             }else if(answers.options === "Update an employee's role"){
                 inquirer.prompt([
@@ -150,16 +184,7 @@ const userInput = () => {
                     {
                         type: "number",
                         name: "employee_id",
-                        message: "What is the ID of the employee you'd like to update?",
-                        validate: updateIdInput =>{
-                            if(updateIdInput){
-                                // TODO: add first and last name dynamically in log
-                                // console.log(`You have selected ${firstNameInput} ${lastNameInput}`);
-                                return true;
-                            }
-                            console.log("Please enter a valid employee ID!");
-                            return false;
-                        }
+                        message: "What is the ID of the employee you'd like to update?"
                     },
                     {
                         type: "number",
@@ -176,6 +201,15 @@ const userInput = () => {
                 ]).then(updatedRoleData =>{
                     console.log(updatedRoleData);
                     //TODO: return updated data to sql tables
+                    let { role_id, employee_id } = updatedRoleData
+                    let sql = `UPDATE employees SET role_id = ${role_id} WHERE employee_id = ${employee_id}`
+                    db.connect(function(err){
+                        db.query(sql, function(err, result, fields){
+                            if(err) throw err;
+                            console.table(result);
+                        });
+                    });
+                   
                 });
             }
         });
